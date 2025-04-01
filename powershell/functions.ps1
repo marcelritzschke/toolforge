@@ -9,7 +9,6 @@ $maximumRecursionDepth = $config.maximumRecursionDepth
 
 Set-PSReadlineKeyHandler -Key Ctrl+f -ScriptBlock {
     Show-CommandMenu
-    Write-Host ""
 }
 
 function Show-CommandMenu {
@@ -30,7 +29,7 @@ function Show-CommandMenu {
             "{0,-$maxLength}  |  {1}" -f $_.Key, $_.Value 
         }
 
-    $selection = $formattedList | fzf --height 40% --border --prompt "Select a command: "
+    $selection = Invoke-Fzf_ -Prompt "Select a command: " -Options $formattedList
 
     if ($selection) {
         $selectedFunction = $selection -split "\|" | Select-Object -First 1
@@ -61,15 +60,18 @@ function Stop-Px {
 }
 
 function Switch-LocalGitBranch {
-    git branch | fzf | ForEach-Object { git switch $_.Trim() }
+    $branches = git branch
+    Invoke-Fzf_ -Prompt "Select branch: " -Options $branches | ForEach-Object { git switch $_.Trim() }
 }
 
 function Switch-RemoteGitBranch {
-    git branch -r | fzf | ForEach-Object { git switch --track $_.Trim() }
+    $branches = git branch -r
+    Invoke-Fzf_ -Prompt "Select remote branch: " -Options $branches | ForEach-Object { git switch --track $_.Trim() }
 }
 
 function Remove-LocalGitBranches {
-    git branch | fzf -m | ForEach-Object { git branch -D $_.Trim() }
+    $branches = git branch
+    Invoke-Fzf_ -Prompt "Select branches to delete: " -Options $branches -ExtraArgs "-m" | ForEach-Object { git branch -D $_.Trim() }
 }
 
 function Get-ProjectFolder_ {
@@ -97,9 +99,23 @@ function Get-ProjectFolder_ {
 
     # Use fzf to select a folder
     $relativeFolders = $allFolders | ForEach-Object { $_ -replace [regex]::Escape($projectFolder + '\'), '' }
-    $selectedRelativeFolder = $relativeFolders | fzf
+    $selectedRelativeFolder = Invoke-Fzf_ -Prompt "Select a project: " -Options $relativeFolders
     $selectedFolder = if ($selectedRelativeFolder) { Join-Path $projectFolder $selectedRelativeFolder.TrimStart('\') }
     if ($selectedFolder) { Set-Location $selectedFolder }
 
     return $selectedFolder
+}
+
+function Invoke-Fzf_ {
+    param (
+        [string]$Prompt = "Select an option: ",
+        [string[]]$Options,
+        [string]$ExtraArgs = ""
+    )
+
+    if ($Options) {
+        return $Options | fzf --height 40% --border --prompt $Prompt $ExtraArgs
+    } else {
+        return fzf --height 40% --border --prompt $Prompt $ExtraArgs
+    }
 }
