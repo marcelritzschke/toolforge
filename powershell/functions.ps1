@@ -6,11 +6,6 @@ $subfoldersToSearch = $config.projectSubfolders
 $maximumRecursionDepth = $config.maximumRecursionDepth
 
 
-
-Set-PSReadlineKeyHandler -Key Ctrl+f -ScriptBlock {
-    Show-CommandMenu
-}
-
 function Show-CommandMenu {
     $commands = @{
         "Switch-ProjectFolder"    = "Switch to a project folder"
@@ -114,8 +109,16 @@ function Invoke-Fzf_ {
     )
 
     if ($Options) {
-        return $Options | fzf --height 40% --border --prompt $Prompt $ExtraArgs
+        if ($ExtraArgs) {
+            return $Options | fzf --height 40% --border --prompt $Prompt $ExtraArgs
+        } else {
+            return $Options | fzf --height 40% --border --prompt $Prompt
+        }
     } else {
-        return fzf --height 40% --border --prompt $Prompt $ExtraArgs
+        if ($ExtraArgs) {
+            return fzf --height 40% --border --prompt $Prompt $ExtraArgs
+        } else {
+            return fzf --height 40% --border --prompt $Prompt
+        }
     }
 }
