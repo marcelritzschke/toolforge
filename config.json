@@ -1,5 +1,10 @@
 {
   "projectFolder": "C:\\projects",
   "projectSubfolders": ["fap5", "fap6", "fap6evo"],
-  "maximumRecursionDepth": 3
+  "maximumRecursionDepth": 3,
+  "remoteHosts": {
+    "mritzsc@66.66.0.10": "~/projects",
+    "190.remote": "~/marcel_workspace",
+    "minerva@53.125.230.190": "~/marcel_workspace"
+  }
 }
